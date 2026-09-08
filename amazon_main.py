@@ -9,8 +9,13 @@ import numpy as np
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.preprocessing.text import Tokenizer
+from keras.layers import AveragePooling1D, BatchNormalization, Dense, Dropout, TextVectorization, GlobalMaxPooling1D
+from keras.models import Sequential
+from keras.layers import Input, Embedding, Conv1D
 from keras.preprocessing.sequence import pad_sequences
+import matplotlib.pyplot as plt
+from keras.utils import to_categorical
+
 
 
 # Download required NLTK data (run once only)
@@ -38,7 +43,7 @@ data = pd.read_csv(
     amazon_dataset_path,
     engine="python",
     # nrows=18500            # capped to 18,500 entries
-    nrows=18500            # capped to 18,500 entries
+    nrows=5000          # capped to 18,500 entries
 )
 
 # Print some rows of the Amazon reviews dataset
@@ -116,11 +121,6 @@ def review_text_cleaning(review_text):
 
     return cleaned_text
 
-
-# Function to tokenize, encode, and pad the cleaned review text
-def tokenize_encode_pad(cleaned_review_text):
-    return 
-
 # Removed unnecessary columns from the Amazon reviews dataset
 data_dropped_unnecessary_columns = data.drop(["Reviewer Name", "Profile Link", "Country", "Review Count", "Review Date", "Review Title", "Date of Experience"], axis=1)
 data = data_dropped_unnecessary_columns
@@ -176,19 +176,17 @@ data_in_CSV_format = data.to_csv(r'C:\APD3F2601SE\SEM_2\Courses\ODL\Assignment\C
 # <//////////////////////////////////////-- Dataset Cleaning --//////////////////////////////////////> 
 
 
-# 5. Tokenization
-# 6. Encoding
-# 7. Padding
-# 8. Word Embedding
+# <//////////////////////////////////////-- Dataset Pre-processing --//////////////////////////////////////> 
 
-# Tokenize the cleaned review text into sequences of integers
-# data["Tokenized Review Text"] = data["Cleaned Review Text"].apply(tokenize_encode_pad)
+# 1. Test and Train Split
+# 2. Tokenization
+# 3. Encoding
+# 4. Padding
+# 5. Word Embedding
 
 # Split the dataset into training and testing sets
-# data_in_CSV_format = data.to_csv(r'C:\APD3F2601SE\SEM_2\Courses\ODL\Assignment\Code\amazon_reviews_cleaned.csv', index=False)
-
 X = data["Cleaned Review Text"]
-Y = data["Sentiment"]
+Y = data["Rating"] - 1  # Subtracting 1 to make the ratings start from 0
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -206,6 +204,10 @@ X_train, X_val, y_train, y_val = train_test_split(
     stratify=y_train
 )
 
+# y_train = to_categorical(y_train)
+# y_test = to_categorical(y_test)
+# y_val = to_categorical(y_val)
+
 print("X_train shape: ", X_train.shape)
 print("y_train shape: ", y_train.shape)
 print("X_test shape: ", X_test.shape)
@@ -214,21 +216,32 @@ print("X_val shape: ", X_val.shape)
 print("y_val shape: ", y_val.shape)
 
 # Maximum number of words in the vocabulary
-vocab_size = 20000
+vocab_size = 17904         # Number of unique words in the cleaned review text column is 17,893, but I use 17904 because multiple of 8 is better for GPU processing
 
 # Create tokenizer
-tokenizer = Tokenizer(
-    num_words=vocab_size,
-    oov_token="<OOV>"
+tokenizer = TextVectorization(
+    max_tokens=vocab_size,
+    output_mode="int",
+    output_sequence_length=128
 )
 
 # Fit tokenizer ONLY on training data
-tokenizer.fit_on_texts(X_train)
+tokenizer.adapt(X_train)
+
+actual_vocabulary = tokenizer.get_vocabulary()
+actual_vocabulary_size = len(actual_vocabulary)
+
+print("Actual vocabulary size:", actual_vocabulary_size)
 
 # Convert text to integer sequences
-X_train_sequences = tokenizer.texts_to_sequences(X_train)
-X_test_sequences = tokenizer.texts_to_sequences(X_test)
-X_val_sequences = tokenizer.texts_to_sequences(X_val)
+X_train_sequences = tokenizer(X_train)
+X_test_sequences = tokenizer(X_test)
+X_val_sequences = tokenizer(X_val)
+
+print("\nX_train sequences shape:", X_train_sequences.shape)
+print("X_test sequences shape:", X_test_sequences.shape)
+print("X_val sequences shape:", X_val_sequences.shape)
+
 
 # Analyse sequence lengths
 train_lengths = [len(sequence) for sequence in X_train_sequences]
@@ -254,40 +267,133 @@ percentage_truncated = (
 print("Number of truncated reviews:", num_truncated)
 print("Percentage of truncated reviews:", percentage_truncated)
 
-X_train_padded = pad_sequences(
-    X_train_sequences,
-    maxlen=max_length,
-    padding="post",
-    truncating="post"
-)
-
-X_test_padded = pad_sequences(
-    X_test_sequences,
-    maxlen=max_length,
-    padding="post",
-    truncating="post"
-)
-
-X_val_padded = pad_sequences(
-    X_val_sequences,
-    maxlen=max_length,
-    padding="post",
-    truncating="post"
-)
-
-print("\nX_train padded shape:", X_train_padded.shape)
-print("X_test padded shape:", X_test_padded.shape)
-print("X_val padded shape:", X_val_padded.shape)
-
 print("\nExample original review:")
 print(X_train.iloc[0])
 
-print("\nExample encoded sequence:")
+print("\nExample encoded & padded sequence:")
 print(X_train_sequences[0])
 
-print("\nExample padded sequence:")
-print(X_train_padded[0])
+# embedding_layer = Embedding(
+#     input_dim=vocab_size,
+#     output_dim=128,
+#     input_shape=(max_length,)
+# )
+
+# <//////////////////////////////////////-- Dataset Pre-processing --//////////////////////////////////////> 
+
 
 
 # <//////////////////////////////////////-- Model Building --//////////////////////////////////////> 
+
+# model = Sequential([
+#     Input(shape=(10,)),                                           #  Explicit Input layer
+#     Embedding(input_dim=1000, output_dim=64),                     #  Remove input_shape here
+#     # ... other layers
+# ])
+
+# CNN
+model = Sequential()
+
+model.add(Input(shape=(max_length,)))
+
+model.add(
+    Embedding(
+        input_dim=actual_vocabulary_size,
+        output_dim=128
+    )
+)
+
+model.add(
+    Conv1D(
+        filters=128,
+        kernel_size=5,
+        activation="relu"
+    )
+)
+
+model.add(BatchNormalization())
+
+model.add(
+    AveragePooling1D(
+        pool_size=2
+    )
+)
+
+model.add(Dropout(0.5))
+
+model.add(
+    Conv1D(
+        filters=128,
+        kernel_size=5,
+        activation="relu"
+    )
+)
+
+model.add(BatchNormalization())
+
+model.add(
+    AveragePooling1D(
+        pool_size=2
+    )
+)
+
+model.add(Dropout(0.5))
+
+# Convert sequence representation into one vector per review
+model.add(GlobalMaxPooling1D())
+
+# Five sentiment classes
+model.add(
+    Dense(
+        5,
+        activation="softmax"
+    )
+)
+
+model.compile(
+    loss="sparse_categorical_crossentropy",
+    optimizer="adam",
+    metrics=["accuracy"]
+)
+
+history = model.fit(
+    X_train_sequences,
+    y_train,
+    batch_size=10,
+    epochs=10,
+    validation_data=(X_val_sequences, y_val)
+)
+
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs = range(1, len(acc) + 1)
+# Creating subplots, figsize (width, height) in inches
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(7, 3))
+axes[0].plot(epochs, acc, 'b', label='Train Accuracy')
+axes[0].plot(epochs, val_acc, 'r', label='Test Accuracy')
+axes[0].set_xlabel('Epoch')
+axes[0].set_ylabel('Accuracy')
+axes[0].set_title('Training and Validation Accuracy')
+axes[0].legend()
+
+axes[1].plot(epochs, loss, 'b', label='Train Loss')
+axes[1].plot(epochs, val_loss, 'r', label='Test Loss')
+axes[1].set_xlabel('Epoch')
+axes[1].set_ylabel('Loss')
+axes[1].set_title('Training and Validation Loss')
+axes[1].legend()
+
+plt.tight_layout()
+plt.show()
+
+
+
+# Bi-LSTM
+
+
+
+
 # <//////////////////////////////////////-- Model Building --//////////////////////////////////////> 
