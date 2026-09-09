@@ -42,8 +42,8 @@ print("\nPath to Amazon CSV dataset file:", amazon_dataset_path)
 data = pd.read_csv(
     amazon_dataset_path,
     engine="python",
-    # nrows=18500            # capped to 18,500 entries
-    nrows=5000          # capped to 18,500 entries
+    nrows=18500            # capped to 18,500 entries
+    # nrows=5000          # capped to 18,500 entries
 )
 
 # Print some rows of the Amazon reviews dataset
@@ -136,6 +136,11 @@ print(data.info())
 # "Rated 2 out of 5 stars" = 2 (int type)
 data["Rating"] = data["Rating"].str.extract(r'(\d+)').astype(int)
 
+
+# Change Rating vlaues to 0 for 1, 2, 3 and 1 for 4, 5
+data["Rating"] = data["Rating"].apply(lambda x: 0 if x == 1 or x == 2 or x == 3 else (1 if x == 4 or x == 5 else None))
+
+
 # Print info and some rows of the Amazon reviews dataset after extracting rating values from the Rating column
 print("\nDataset info after extracting rating values:")
 print(data.info())
@@ -143,7 +148,8 @@ print("\nSome rows after extracting rating values from the Rating column:", data
 
 # Categorize ratings into sentiment classes
 # 1 = Negative, 2 = Slightly Negative, 3 = Neutral, 4 = Slightly Positive, 5 = Positive
-data["Sentiment"] = data["Rating"].apply(lambda x: "Negative" if x == 1 else ("Slightly Negative" if x == 2 else ("Neutral" if x == 3 else ("Slightly Positive" if x == 4 else "Positive"))))
+# data["Sentiment"] = data["Rating"].apply(lambda x: "Negative" if x == 1 else ("Slightly Negative" if x == 2 else ("Neutral" if x == 3 else ("Slightly Positive" if x == 4 else "Positive"))))
+data["Sentiment"] = data["Rating"].apply(lambda x: "Postive" if x == 1 else ("Negative"))
 
 # Print info and some rows of the Amazon reviews dataset after adding Sentiment column
 print("\nDataset info after adding Sentiment column:")
