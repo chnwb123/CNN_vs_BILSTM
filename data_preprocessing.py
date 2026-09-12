@@ -6,7 +6,6 @@ import kagglehub          # To download datasets from Kaggle
 import pandas as pd       # To read and manipulate the dataset
 import string             # To handle string operations
 import nltk               # To use Natural Language Toolkit for text processing 
-import numpy as np        # To handle numerical operations
 from nltk.corpus import stopwords           # To remove common words that do not contribute to the meaning of the text
 from nltk.tokenize import word_tokenize     # To split text into individual words
 
@@ -107,7 +106,8 @@ def review_text_cleaning(review_text):
 
     # 8. Remove stop words
     stop_words = set(stopwords.words("english"))
-    words_to_keep = {"cant", "wont", "not", "no", "never", "nor", "very", "too", "really", "extremely", "highly"}
+    words_to_keep = {"cant", "wont", "not", "no", "never", "nor", "very", 
+                     "too", "really", "extremely", "highly"}
     custom_stopwords = stop_words - words_to_keep
     words = [word for word in words if word not in custom_stopwords]
 
@@ -122,13 +122,18 @@ def review_text_cleaning(review_text):
     return cleaned_text
 
 
-
 # Remove unnecessary columns from the Amazon reviews dataset
-data_dropped_unnecessary_columns = data.drop(["Reviewer Name", "Profile Link", "Country", "Review Count", "Review Date", "Review Title", "Date of Experience"], axis=1)
+data_dropped_unnecessary_columns = data.drop(["Reviewer Name", 
+                                              "Profile Link", 
+                                              "Country", 
+                                              "Review Count", 
+                                              "Review Date", 
+                                              "Review Title", 
+                                              "Date of Experience"], axis=1)
 data = data_dropped_unnecessary_columns
 
 # Print some rows of the Amazon reviews dataset after deleting unnecessary columns
-print("\nSome rows after deleting unnecessary columns:", data.head())
+print("\nSome rows after deleting unnecessary columns: \n", data.head())
 
 # Print the info of Amazon reviews dataset after deleting unnecessary columns
 print("\nPrint dataset info after deleting unnecessary columns: ")
@@ -142,10 +147,10 @@ data["Rating"] = data["Rating"].str.extract(r'(\d+)').astype(int)
 data["Rating"] = data["Rating"].apply(lambda x: 0 if x == 1 or x == 2 or x == 3 else (1))
 
 # Print some rows of the Amazon reviews dataset after extracting rating values from the Rating column and converting each of them into 0 or 1 integer value
-print("\nSome rows after extracting rating values from the Rating column:", data.head())
+print("\nSome rows after extracting and formatting rating values from the Rating column: \n", data.head())
 
 # Print the info of the Amazon reviews dataset after extracting rating values from the Rating column and converting each of them into 0 or 1 integer value
-print("\nDataset info after extracting rating values:")
+print("\nDataset info after extracting and formatting rating values:")
 print(data.info())
 
 # Categorize Rating values into sentiment classes
@@ -154,7 +159,7 @@ print(data.info())
 data["Sentiment"] = data["Rating"].apply(lambda x: "Postive" if x == 1 else ("Negative"))
 
 # Print some rows of the Amazon reviews dataset after adding Sentiment column
-print("\nSome rows after adding Sentiment column:", data.head())
+print("\nSome rows after adding Sentiment column: \n", data.head())
 
 # Print the info of the Amazon reviews dataset after adding Sentiment column
 print("\nDataset info after adding Sentiment column:")
@@ -177,7 +182,7 @@ print("\nNumber of unique values in the Review Text column:", data["Review Text"
 data["Cleaned Review Text"] = data["Review Text"].apply(review_text_cleaning)
 
 # Print some rows of the Amazon reviews dataset after cleaning the Review Text column
-print("\nSome rows after cleaning the Review Text column:", data.head())
+print("\nSome rows after cleaning the Review Text column: \n", data.head())
 
 # Get the length of every cleaned review text in the Cleaned Review Text column
 data["Cleaned Review Text Length"] = data["Cleaned Review Text"].apply(len)
