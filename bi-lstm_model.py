@@ -35,15 +35,16 @@ data = pd.read_csv(r'C:\APD3F2601SE\SEM_2\Courses\ODL\Assignment\Code\amazon_rev
 
 # <//////////////////////////////////////-- Dataset Pre-processing --//////////////////////////////////////> 
 
-# 1. Test and Train Split
+# 1. Test, Train, and Validation Split
 # 2. Tokenization
 # 3. Encoding
 # 4. Padding
 
-# Split the dataset into training and testing sets
+# Split the dataset into features (X) and target (Y)
 X = data["Cleaned Review Text"]       # Independent variable (features) - the cleaned review text
 Y = data["Rating"]                    # Dependent variable (target) - the rating (0 or 1)
 
+# Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     Y,
@@ -88,11 +89,12 @@ tokenizer = TextVectorization(
 tokenizer.adapt(X_train)
 
 # Get the actual vocabulary and its size
-actual_vocabulary = tokenizer.get_vocabulary()
-actual_vocabulary_size = len(actual_vocabulary)
+# actual_vocabulary = tokenizer.get_vocabulary()
+# actual_vocabulary_size = len(actual_vocabulary)
 
 # Print the actual vocabulary size
-print("Actual vocabulary size:", actual_vocabulary_size)
+# print("Actual vocabulary size:", actual_vocabulary_size)
+actual_vocabulary_size = 17904
 
 # Convert training, testing, and validation texts to integer sequences
 X_train_sequences = tokenizer(X_train)
