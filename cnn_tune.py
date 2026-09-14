@@ -163,7 +163,8 @@ def build_cnn_model(hp):
             kernel_size=hp.Int("kernel_size_1", min_value=3, max_value=7, step=1),  # The range of kernel sizes that would be tuned from 3 to 7, with a step size of 1.
             activation="relu",
             kernel_initializer='he_normal', 
-            kernel_regularizer=regularizers.l2(hp.Choice("kernel_regularizer_2", [0.0001, 0.0005, 0.001]))  # The range of kernel regularization values that would be tuned from 0.0001 to 0.001, with a step size of 0.0005.
+            kernel_regularizer=regularizers.l2(hp.Choice("kernel_regularizer_1", 
+                                                         [0.0001, 0.0005, 0.001]))  # The range of kernel regularization values that would be tuned from 0.0001 to 0.001
         )
     )
 
@@ -183,7 +184,8 @@ def build_cnn_model(hp):
             kernel_size=hp.Int("kernel_size_2", min_value=3, max_value=7, step=1),
             activation="relu",
             kernel_initializer='he_normal', 
-            kernel_regularizer=regularizers.l2(hp.Choice("kernel_regularizer_2", [0.0001, 0.0005, 0.001]))
+            kernel_regularizer=regularizers.l2(hp.Choice("kernel_regularizer_2", 
+                                                         [0.0001, 0.0005, 0.001]))
         )
     )
 

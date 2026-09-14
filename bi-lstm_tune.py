@@ -159,8 +159,10 @@ def build_biLSTM_model(hp):
         units=hp.Int("lstm_units", min_value=32, max_value=256, step=32),  # The range of LSTM units (neurons) that would be tuned from 32 to 256, with a step size of 32.
         return_sequences=True, 
         activation="tanh",
-        kernel_initializer=hp.Choice("kernel_initializer", ["he_normal", "truncated_normal", "orthogonal"]),  # The range of kernel initializer methods that would be tuned from "he_normal", "truncated_normal", and "orthogonal".
-        kernel_regularizer=regularizers.l2(hp.Choice("kernel_regularizer_2", [0.0001, 0.0005, 0.001]))   # The range of kernel regularization values that would be tuned from 0.0001 to 0.001, with a step size of 0.0005.
+        kernel_initializer=hp.Choice("kernel_initializer", 
+                                     ["he_normal", "truncated_normal", "orthogonal"]),  # The range of kernel initializer methods that would be tuned from "he_normal", "truncated_normal", and "orthogonal".
+        kernel_regularizer=regularizers.l2(hp.Choice("kernel_regularizer", 
+                                                     [0.0001, 0.0005, 0.001]))   # The range of kernel regularization values that would be tuned from 0.0001 to 0.001
         ))
     )
 

@@ -139,7 +139,7 @@ print(X_train_sequences[0])
 # <//////////////////////////////////////-- Model Building --//////////////////////////////////////> 
 
 # Bi-LSTM
-embedding_dim = 128             # The dimension of the dense embedding vectors that will be learned for each word in the vocabulary. Each word will be represented by a vector of this size in the embedding layer of the CNN model.
+embedding_dim = 128             # The dimension of the dense embedding vectors that will be learned for each word in the vocabulary. Each word will be represented by a vector of this size in the embedding layer of the Bi-LSTM model.
 
 model = Sequential()            # Create a sequential model, which is a linear stack of layers. This is the simplest type of model in Keras, where you can add layers one after another.
 
@@ -153,7 +153,11 @@ model.add(
     # Add an embedding layer to the model, which will map each word in the input sequence to a dense vector of size embedding_dim.
 )
 
-model.add(Bidirectional(LSTM(128, return_sequences=True, activation='tanh', kernel_initializer='he_normal', kernel_regularizer=regularizers.l2(0.001))))
+model.add(Bidirectional(LSTM(128, 
+                             return_sequences=True, 
+                             activation='tanh', 
+                             kernel_initializer='he_normal', 
+                             kernel_regularizer=regularizers.l2(0.001))))
 # Add a bidirectional LSTM layer to the model, which will process the input sequence in both forward and backward directions. The LSTM layer has 128 units, returns sequences (i.e., outputs a sequence for each input time step), uses the 'tanh' activation function, initializes the weights using the 'he_normal' method, and applies L2 regularization with a factor of 0.001 to prevent overfitting.
 
 model.add(Dropout(0.3))     # Add a dropout layer to the model, which randomly sets a fraction of the input units to 0 at each update during training, which helps prevent overfitting.

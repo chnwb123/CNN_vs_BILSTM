@@ -1,6 +1,6 @@
 Amazon_Reviews.csv
 amazon_reviews_cleaned.csv
 ideas.txt
-biLSTM_tuning_results/
+bi-lstm_tuning_results/
 cnn_tuning_results/
 testing.py
